@@ -30,3 +30,4 @@ vocab_size = len(TEXT.vocab)
 n_classes = 2
 
 print("[학습셋] : %d [검증셋] : %d [테스트셋] : %d [단어수] : %d [클래스] : %d" %(len(trainset),len(valset),len(testset),vocab_size,n_classes))
+# [학습셋] : 20000 [검증셋] : 5000 [테스트셋] : 25000 [단어수] : 46159 [클래스] : 2
