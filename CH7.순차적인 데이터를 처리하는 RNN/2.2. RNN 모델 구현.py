@@ -50,3 +50,44 @@ class BasicGRU(nn.Module):
             loss = F.cross_entropy(logit,y) # logit과 실제 값(y)와 cross entropy를 통해 손실값 계산
             loss.backward() # 역전파
             optimizer.step() # 가중치 갱신
+
+    def evaluate(model,val_iter):
+        """evaluate model"""
+        model.eval()
+        corrects, total_loss = 0,0
+        for batch in val_iter:
+            x,y = batch.text.to(DEVICE), batch.label.to(DEVICE)
+            y.data.sub_(1)
+            logit = model(x)
+            loss = F.cross_entropy(logit,y,reduction='sum')
+            total_loss += loss.item()
+            corrects += (logit.max(1)[1].view(y.size()).data == y.data).sum()
+        
+        size = len(val_iter.dataset)
+        avg_loss = total_loss / size
+        avg_accuray = 100.0*corrects/size
+        return avg_loss,avg_accuray
+    
+    ### 모델 객체 정의
+    # 모델 은닉벡터 차원값 = 256 / 임베딩된 토큰의 차원값 128
+    model = BasicGRU(1,256,vocab_size,128,n_classes,0.5).to(DEVICE)
+    optimizer = torch.optim.Adam(model.parameters(),lr=lr) # 최적화 알고리즘 정의
+
+
+    ### 학습 진행
+    best_val_loss = None
+    for e in range(1,EPOCHS+1):
+        train(model,optimizer,train_iter)
+        val_loss, val_accuracy = evaluate(model,val_iter)
+
+        print("[에폭 : %d] 검증 오차 : %5.2f | 검증 정확도 : %5.2f" %(e,val_loss,val_accuracy))
+
+    # 최종 모델은 학습 오차가 아닌 '검증 오차'가 최소화된 모델이 선택된다.
+    # 검증 오차가 가장 작은 모델을 저장
+    if not best_val_loss or val_loss < best_val_loss:
+        if not os.path.isdir("snapshot"):
+            os.makedirs("snapshot")
+        torch.save(model.state_dict(), './snapshot/txtclassification.pt')
+        best_val_loss = val_loss
+
+    
