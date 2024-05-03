@@ -13,7 +13,7 @@ EPOCHS = 40
 USE_CUDA = torch.cuda.is_available()
 
 DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
-TEXT = data.Field(sequential=True,batch_first=True,lower=True)
+TEXT = data.Field(sequential=True,batch_first=True,lower=True) 
 LABEL = data.Field(sequential=True,batch_first=True)
 
 trainset, testset = datasets.IMDB.splits(TEXT,LABEL)
