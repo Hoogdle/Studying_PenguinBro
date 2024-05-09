@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class BasicGRU(nn.Module):
+    ### Q. 이 구문이 상용적으로 사용되는데 어떤 의미를 가지는지? (nn.Module, super~~)
     def __init__(self,n_layers,hidden_dim,n_vocab,embed_dim,n_classes,dropout_p=0.2):
         super(BasicGRU,self).__init__()
         print("Building Basic GRU model...")
@@ -27,13 +28,14 @@ class BasicGRU(nn.Module):
                                               # 해당 반복자가 생성하는 원소들은 실제 신경망의 가중치 텐서(.data)를 지닌 객체들
                                               # 즉 이 명령어는 nn.GRU 모델의 첫 번째 가중치 텐서를 추출
         return weight.new(self.n_layers,batch_size,self.hidden_dim).zero_() # 추출된 가중치 텐서를 (n_layers,batch_size,hidden_dim) 모양을 갖춘 텐서로 변환 후 텐서의 모든 값을 0으로 초기화
+        ### Q. 굳이 텐서의 모양을 바꾸는 이유?? (모델의 input이나 embedding의 input이 정형화 되어 있는 것인가?)
 
     def forward(self,x):
         x = self.embed(x) # 입력데이터 x(한 배치 속에 있는 모든 영화평)을 벡터의 배열로 전환
         h_0 = self._init_state(batch_size = x.size(0)) # 다른 신경망들과 달리 RNN은 입력 데이터 외에도 첫 번째 은닉 벡터 H0을 정의해 x와 함께 넣어줘야 한다.
         x, _ = self.gru(x,h_0) # self.gru의 결과값은 (batch_size,x의 length,hidden_dim) 모양을 가지는 3d 텐서
         h_t = x[:,-1,:] # 마지막 은닉벡터만 추출하여 h_t에 저장
-        self.dropout(h_t)
+        self.dropout(h_t) ### Q.dropout()에 왜 h_t가 들어가는 것인가? dropout은 일부 노드들을 drop시키는게 아니였나?
 
         logit = self.out(h_t)
         return logit

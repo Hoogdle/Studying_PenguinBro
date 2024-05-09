@@ -29,8 +29,8 @@ LABEL.build_vocab(trainset)
 
 trainset, valset = trainset.split(split_ratio=0.8) # 학습셋 80%, 검증셋 20%로 나누기
 # train_iter,val_iter,test_iter에 각각 배치 데이터 생성해주기
-train_iter, val_iter, test_iter = data.BucketIterator.splits((trainset,valset,testset),batch_size = BATCH_SIZE,shuffle=True,repeat=False)
-
+train_iter, val_iter, test_iter = data.BucketIterator.splits((trainset,valset,testset),batch_size = BATCH_SIZE,shuffle=True,repeat=False) 
+### Q.iteraotr를 만들어준다는게 [A set] -> [B set] -> [C set] -> ... 와 같은 iterator를 만들어준다는 것인가?
 # 사전속 단어 갯수와 레이블 수를 변수에 저장
 vocab_size = len(TEXT.vocab)
 n_classes = 2
