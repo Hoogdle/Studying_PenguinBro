@@ -29,7 +29,7 @@ print("다음 기기로 학습합니다:", DEVICE)
 print("데이터 로딩중...")
 TEXT = data.Field(sequential=True, batch_first=True, lower=True)
 LABEL = data.Field(sequential=False, batch_first=True)
-trainset, testset = datasets.IMDB.splits(TEXT, LABEL) # 요기서부터!!
+trainset, testset = datasets.IMDB.splits(TEXT, LABEL)
 TEXT.build_vocab(trainset, min_freq=5)
 LABEL.build_vocab(trainset)
 
@@ -38,7 +38,7 @@ trainset, valset = trainset.split(split_ratio=0.8)
 train_iter, val_iter, test_iter = data.BucketIterator.splits(
         (trainset, valset, testset), batch_size=BATCH_SIZE,
         shuffle=True, repeat=False)
-
+# 요기서부터!!
 
 vocab_size = len(TEXT.vocab)
 n_classes = 2
