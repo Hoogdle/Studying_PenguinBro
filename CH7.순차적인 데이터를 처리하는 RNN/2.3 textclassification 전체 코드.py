@@ -9,6 +9,14 @@
 # 이번 책에서 처음으로 접하는 텍스트 형태의 데이터셋인 IMDB 데이터셋은 50,000건의 영화 리뷰로 이루어져 있습니다.
 # 각 리뷰는 다수의 영어 문장들로 이루어져 있으며, 평점이 7점 이상의 긍정적인 영화 리뷰는 2로, 평점이 4점 이하인 부정적인 영화 리뷰는 1로 레이블링 되어 있습니다. 영화 리뷰 텍스트를 RNN 에 입력시켜 영화평의 전체 내용을 압축하고, 이렇게 압축된 리뷰가 긍정적인지 부정적인지 판단해주는 간단한 분류 모델을 만드는 것이 이번 프로젝트의 목표입니다.
 
+
+# 2024-05-15 미해결
+# cross entropy 에서 label는 1과 0이 어떻게 처리 되는가
+# 어떻게 vocab의 인덱스들을 자동으로 가져올 수 있는가 .text와 .label ??
+# h0 정리
+# gru output 정리
+# eval 정리
+
 import os
 import torch
 import torch.nn as nn
@@ -31,14 +39,13 @@ TEXT = data.Field(sequential=True, batch_first=True, lower=True)
 LABEL = data.Field(sequential=False, batch_first=True)
 trainset, testset = datasets.IMDB.splits(TEXT, LABEL)
 TEXT.build_vocab(trainset, min_freq=5)
-LABEL.build_vocab(trainset)
+LABEL.build_vocab(trainset) ###?
 
 # 학습용 데이터를 학습셋 80% 검증셋 20% 로 나누기
 trainset, valset = trainset.split(split_ratio=0.8)
 train_iter, val_iter, test_iter = data.BucketIterator.splits(
         (trainset, valset, testset), batch_size=BATCH_SIZE,
         shuffle=True, repeat=False)
-# 요기서부터!!
 
 vocab_size = len(TEXT.vocab)
 n_classes = 2
