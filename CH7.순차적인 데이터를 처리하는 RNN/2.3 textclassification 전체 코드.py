@@ -60,22 +60,23 @@ print("[학습셋]: %d [검증셋]: %d [테스트셋]: %d [단어수]: %d [클�
 
 class BasicGRU(nn.Module):
     def __init__(self, n_layers, hidden_dim, n_vocab, embed_dim, n_classes, dropout_p=0.2):
-        super(BasicGRU, self).__init__()
+        super(BasicGRU, self).__init__() # BasicGRU의 부모 클래스를 상속
         print("Building Basic GRU model...")
-        self.n_layers = n_layers
-        self.embed = nn.Embedding(n_vocab, embed_dim)
-        self.hidden_dim = hidden_dim
-        self.dropout = nn.Dropout(dropout_p)
-        self.gru = nn.GRU(embed_dim, self.hidden_dim,
+        self.n_layers = n_layers # GRU의 layers의 수, layer가 깊을 수록 복잡한 연산 수행 가능
+        self.embed = nn.Embedding(n_vocab, embed_dim) # nn.Embedding은 input: indexed된 단어 list, output : 해당 단어의 벡터를 만들어준다.
+                                                      # embedding된 단어, 즉 indexed list => vector list로 변환된 텐서가 GRU의 input으로 들어가게 됩니다.
+        self.hidden_dim = hidden_dim 
+        self.dropout = nn.Dropout(dropout_p) # overfitting을 막기 위해 dropout 설정
+        self.gru = nn.GRU(embed_dim, self.hidden_dim, 
                           num_layers=self.n_layers,
                           batch_first=True)
-        self.out = nn.Linear(self.hidden_dim, n_classes)
+        self.out = nn.Linear(self.hidden_dim, n_classes) # 마지막 hidden_state를 MLP를 거쳐 n_classes(==2)의 차원으로 변환, 일종의 분류기. 이후 cross entropy 진행
 
     def forward(self, x):
-        x = self.embed(x)
-        h_0 = self._init_state(batch_size=x.size(0))
-        x, _ = self.gru(x, h_0)  # [i, b, h]
-        h_t = x[:,-1,:]
+        x = self.embed(x) # indexed된 단어가 embedding의 input으로 => indexed_num => word's vector 로 변환됨.
+        h_0 = self._init_state(batch_size=x.size(0)) # batch_size를 텐서 x의 첫 번째 차원. 즉, 배치 크기만큼으로 설정. h_0(초기 은닉 상태)는 (layer의 갯수,배치크기,은닉 차원)의 크기의 텐서로 0으로 채워지게 된다.
+        x, _ = self.gru(x, h_0)  # gru의 input으로 embeded된 단어의 텐서, h_0 텐서가 들어가고 output으로 (배치사이즈,문자길이,은닉차원)의 텐서와 , h_t 텐서를 출력, 이중 첫 번째 텐서만 받음
+        h_t = x[:,-1,:] # 마지막 단어 input일 때의 hidden state만 추출하여 h_t에 저장
         self.dropout(h_t)
         logit = self.out(h_t)  # [b, h] -> [b, o]
         return logit
