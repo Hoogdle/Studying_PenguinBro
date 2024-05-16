@@ -48,7 +48,7 @@ trainset, valset = trainset.split(split_ratio=0.8) # trainset을 다시 trainset
 train_iter, val_iter, test_iter = data.BucketIterator.splits( # data.BucketIterator로 반복자를 batch의 크기를 한 단위로 하여 세팅해줌                                                            
         (trainset, valset, testset), batch_size=BATCH_SIZE,   # BucketIterator는 비슷한 길이를 가지는 문장을 동일한 배치에 포함시키는 기능을 가짐 => padding을 minimize 할 수 있다.                                                              
         shuffle=True, repeat=False)                           # BucketIterator는 단어들을 vocab의 인덱싱 넘버로 변경해주기도 함. (word -> indexed number) 
-                                                              # 데이터로더를 만들 때 suffle을 해줘야 
+                                                              # shuffle = True => 매 epoch 마다 shuffle 해줌, 무작위로 섞어줘서 데이터 순서를 학습하지 않도록, 일반화 성능을 높여줌.
 
 vocab_size = len(TEXT.vocab)
 n_classes = 2
