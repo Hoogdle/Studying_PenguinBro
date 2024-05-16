@@ -94,7 +94,7 @@ def train(model, optimizer, train_iter):
         optimizer.zero_grad()
 
         logit = model(x)
-        loss = F.cross_entropy(logit, y)
+        loss = F.cross_entropy(logit, y) # *cross_entropy 함수에는 nn.Logsoftmax(확률로 표현하기 위함)가 포함되어 있다!
         loss.backward()
         optimizer.step()
 
