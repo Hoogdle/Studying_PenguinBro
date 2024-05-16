@@ -35,17 +35,20 @@ print("다음 기기로 학습합니다:", DEVICE)
 
 # 데이터 로딩하기
 print("데이터 로딩중...")
-TEXT = data.Field(sequential=True, batch_first=True, lower=True)
-LABEL = data.Field(sequential=False, batch_first=True)
-trainset, testset = datasets.IMDB.splits(TEXT, LABEL)
-TEXT.build_vocab(trainset, min_freq=5)
-LABEL.build_vocab(trainset) ###?
+TEXT = data.Field(sequential=True, batch_first=True, lower=True) # sequential true => 토큰나이징 O , batch_first => 첫 번째 입력차원을 batch 크기만큼, 
+LABEL = data.Field(sequential=False, batch_first=True)  # lower => 컴퓨터는 "apple"과 "Apple"을 다른 단어로 인식
+trainset, testset = datasets.IMDB.splits(TEXT, LABEL)  # trainset과 testset에는 각각 text field와 label field가 존재하게 된다.
+                                                      # trainset[0] {'text' : ['if','you','like',~~~~~~~,'picture.'],'label' : 'pos}
+
+TEXT.build_vocab(trainset, min_freq=5) # data.Feild의 build_vocab함수로 최소 5번 이상 나온 단어들을 vocab에 포함. 5번 미만은 <unk> 토큰으로 인덱싱 (단어를 인덱싱한 vocab을 생성, TEXT.vocab에 저장)
+LABEL.build_vocab(trainset) 
 
 # 학습용 데이터를 학습셋 80% 검증셋 20% 로 나누기
-trainset, valset = trainset.split(split_ratio=0.8)
-train_iter, val_iter, test_iter = data.BucketIterator.splits(
-        (trainset, valset, testset), batch_size=BATCH_SIZE,
-        shuffle=True, repeat=False)
+trainset, valset = trainset.split(split_ratio=0.8) # trainset을 다시 trainset과 valset으로 8:2 비율로 나눠주기
+train_iter, val_iter, test_iter = data.BucketIterator.splits( # data.BucketIterator로 반복자를 batch의 크기를 한 단위로 하여 세팅해줌                                                            
+        (trainset, valset, testset), batch_size=BATCH_SIZE,   # BucketIterator는 비슷한 길이를 가지는 문장을 동일한 배치에 포함시키는 기능을 가짐 => padding을 minimize 할 수 있다.                                                              
+        shuffle=True, repeat=False)                           # BucketIterator는 단어들을 vocab의 인덱싱 넘버로 변경해주기도 함. (word -> indexed number) 
+                                                              # 데이터로더를 만들 때 suffle을 해줘야 
 
 vocab_size = len(TEXT.vocab)
 n_classes = 2
