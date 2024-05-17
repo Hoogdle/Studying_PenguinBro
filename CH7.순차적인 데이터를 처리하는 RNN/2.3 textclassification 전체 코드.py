@@ -76,9 +76,9 @@ class BasicGRU(nn.Module):
         x = self.embed(x) # indexed된 단어가 embedding의 input으로 => indexed_num => word's vector 로 변환됨.
         h_0 = self._init_state(batch_size=x.size(0)) # batch_size를 텐서 x의 첫 번째 차원. 즉, 배치 크기만큼으로 설정. h_0(초기 은닉 상태)는 (layer의 갯수,배치크기,은닉 차원)의 크기의 텐서로 0으로 채워지게 된다.
         x, _ = self.gru(x, h_0)  # gru의 input으로 embeded된 단어의 텐서, h_0 텐서가 들어가고 output으로 (배치사이즈,문자길이,은닉차원)의 텐서와 , h_t 텐서를 출력, 이중 첫 번째 텐서만 받음
-        h_t = x[:,-1,:] # 마지막 단어 input일 때의 hidden state만 추출하여 h_t에 저장
-        self.dropout(h_t)
-        logit = self.out(h_t)  # [b, h] -> [b, o]
+        h_t = x[:,-1,:] # 마지막 단어 input일 때의 hidden state만 추출하여 h_t에 저장, h_t의 차원은 torch.size([64,256]) (배치크기,은닉 차원)의 2차원 텐서로 변환됨.
+        self.dropout(h_t) # overfitting을 막기 위해 drop out! 각 배치마다 독립적으로 적용되며 벡터의 일부 값들이 제거됩니다.
+        logit = self.out(h_t)  # h_t는 dropout를 거친 [64,256]의 텐서입니다. 이 텐서가 MLP를 거쳐 [64,2]의 텐서로 변환이 되며 이 텐서가 가지는 값은 확률적인 값은 아닙니다.(이후 nn.crossentropy에 내장되어 있는 softmax에서 확률적 처리)
         return logit
     
     def _init_state(self, batch_size=1):
