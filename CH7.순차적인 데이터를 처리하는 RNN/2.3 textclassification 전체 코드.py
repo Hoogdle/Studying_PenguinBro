@@ -89,14 +89,19 @@ class BasicGRU(nn.Module):
 def train(model, optimizer, train_iter):
     model.train()
     for b, batch in enumerate(train_iter):
-        x, y = batch.text.to(DEVICE), batch.label.to(DEVICE)
-        y.data.sub_(1)  # 레이블 값을 0과 1로 변환
-        optimizer.zero_grad()
+        x, y = batch.text.to(DEVICE), batch.label.to(DEVICE) # batch에는 train_iter가 들어가게됨, 각 iter가 끝나게 되면 가중치 업데이트, 즉 한 배치가 끝나면 가중치 업데이트
+        y.data.sub_(1)  # 레이블 값을 0과 1로 변환 #cross_entropy의 과정에서어 도움을 준다.
+        optimizer.zero_grad() # 이전 배치에서 구한 가중치(loss를 가중치에 대해 미분한 값들)을 0으로 초기화 해서 누적해서 더해지지 않게 해준다.
 
-        logit = model(x)
+        logit = model(x) #logit의 차원은 (64,2)의 2차원의 텐서가 됩니다.
         loss = F.cross_entropy(logit, y) # *cross_entropy 함수에는 nn.Logsoftmax(확률로 표현하기 위함)가 포함되어 있다!
-        loss.backward()
-        optimizer.step()
+                                         # logit은 (64,2)의 텐서, y는 긍정 혹은 부정을 나타내는 1차원 텐서의 값 (긍정==0, 부정==1)
+                                         # 먼저 nn.Logsoftmax를 거치면서 softmax의 값을 거친값에 log가 씌워지게 됩니다.(cross_entropy 특성상 예측값에 log를 씌우므로)
+                                         # logit과 y의 차원이 다른것에 의문이 들 수도 있는데, cross_entropy연산 특성상 정답 label에 해당하는 예측값의 노드만 가져오면 되므로 y는 데이터 set의 정답이 어떤 노드인지 나타내는 1차원 텐서여도 상과없습니다.
+                                         # 즉, y가 가리키고 있는 것은 logit이 softmax with log 들어간 후 취할 노드의 번호입니다(0번 부터 시작)
+        loss.backward()                  # 위 과정에서 손실을 구했으면 역전파를 진행해 self.parameters. '가중치'들 중에서 required_grad = True(사실상 self.paramter들은 대게 required_grad=true)에 해당하는 가중치들을 오차역전파로 구합니다.
+                                         # 즉 loss 함수에 대해 각각의 가중치들에 대한 미분 값들, loss-w 함수에서의 기울기 값들을 구하는 과정입니다.
+        optimizer.step()                 # 위에서 얻은 loss-w 함수의 기울기 값들에 lr을 곱하여 가중치들을 업데이트 합니다.
 
 
 def evaluate(model, val_iter):
