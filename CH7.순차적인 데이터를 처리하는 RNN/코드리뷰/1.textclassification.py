@@ -87,7 +87,7 @@ class BasicGRU(nn.Module):
 
 
 def train(model, optimizer, train_iter):
-    model.train()
+    model.train() # 모델이 train 모드로 전환 => 가중치 업데이트 O
     for b, batch in enumerate(train_iter):
         x, y = batch.text.to(DEVICE), batch.label.to(DEVICE) # batch에는 train_iter가 들어가게됨, 각 iter가 끝나게 되면 가중치 업데이트, 즉 한 배치가 끝나면 가중치 업데이트
         y.data.sub_(1)  # 레이블 값을 0과 1로 변환 #cross_entropy의 과정에서어 도움을 준다.
@@ -106,7 +106,7 @@ def train(model, optimizer, train_iter):
 
 def evaluate(model, val_iter):
     """evaluate model"""
-    model.eval()
+    model.eval() # 모델이 eval 모드로 전환 => Dropout X , Batchnormal X
     corrects, total_loss = 0, 0
     for batch in val_iter:
         x, y = batch.text.to(DEVICE), batch.label.to(DEVICE)
