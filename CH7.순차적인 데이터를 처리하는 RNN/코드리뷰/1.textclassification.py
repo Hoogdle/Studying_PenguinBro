@@ -126,8 +126,8 @@ def evaluate(model, val_iter):
     return avg_loss, avg_accuracy
 
 
-model = BasicGRU(1, 256, vocab_size, 128, n_classes, 0.5).to(DEVICE)
-optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+model = BasicGRU(1, 256, vocab_size, 128, n_classes, 0.5).to(DEVICE) # 모델선언
+optimizer = torch.optim.Adam(model.parameters(), lr=lr) # 최적화는 Adam을 사용
 
 
 best_val_loss = None
@@ -136,7 +136,7 @@ for e in range(1, EPOCHS+1):
     val_loss, val_accuracy = evaluate(model, val_iter)
 
     print("[이폭: %d] 검증 오차:%5.2f | 검증 정확도:%5.2f" % (e, val_loss, val_accuracy))
-    
+
     # 검증 오차가 가장 적은 최적의 모델을 저장
     if not best_val_loss or val_loss < best_val_loss:
         if not os.path.isdir("snapshot"):
