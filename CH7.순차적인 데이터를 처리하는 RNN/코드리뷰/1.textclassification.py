@@ -107,17 +107,22 @@ def train(model, optimizer, train_iter):
 def evaluate(model, val_iter):
     """evaluate model"""
     model.eval() # 모델이 eval 모드로 전환 => Dropout X , Batchnormal X
-    corrects, total_loss = 0, 0
+    corrects, total_loss = 0, 0 
     for batch in val_iter:
         x, y = batch.text.to(DEVICE), batch.label.to(DEVICE)
         y.data.sub_(1) # 레이블 값을 0과 1로 변환
-        logit = model(x)
-        loss = F.cross_entropy(logit, y, reduction='sum')
-        total_loss += loss.item()
-        corrects += (logit.max(1)[1].view(y.size()).data == y.data).sum()
-    size = len(val_iter.dataset)
-    avg_loss = total_loss / size
-    avg_accuracy = 100.0 * corrects / size
+        logit = model(x) # 여기까지는 위의 과정과 동일
+        loss = F.cross_entropy(logit, y, reduction='sum') # 위의 과정과 동일하게 cross_entropy를 하되, 모든 loss를 summation 한다.
+        total_loss += loss.item() # torch.item() 은 스칼라 텐서의 '값'을 반환하는 함수
+        corrects += (logit.max(1)[1].view(y.size()).data == y.data).sum() # logit.max(1)을하면 [0]에 max에 해당하는 값들의 list를 [1]에 max에 해당하는 인덱스의 list를 갖고오는데
+                                                                          # logit.max(1)[1]로 max에 해당하는 인덱스를 갖고온다. logit.max(1)[1]의 결과는 torch.size([64]) 즉 64개의 값을 가지는 1차원 이다. 
+                                                                          # 이 때 갖고온 y.data는 (64,1)의 모양인데 == 연산을 해야하므로 차원을 맞춰주기 위해 logit.max(1)[1].view(y.size())로 64개의 요소를 가지는 1차원 텐서를
+                                                                          # torch.Size([64,1])의 텐서로 변환 후 == 연산을 해준다. .data는 데이터를 참조하므로 '== 연산에서 값이 갖다면' <-> '모델의 예측 label이 target의 label과 동일하다면
+                                                                          # True로 아니면 False로 채워진다. 이후 .sum() 연산으로 텐서의 모든 요소들의 합이 scalar형태로 변환되어 반환되게된다.
+                                                                         
+    size = len(val_iter.dataset) # val_iter의 데이터 갯수로 size를 초기화
+    avg_loss = total_loss / size # 평균 loss == 전체 loss를 데이터 갯수만큼 나눠준 값
+    avg_accuracy = 100.0 * corrects / size # 정확도 == (맞은 갯수/데이터 크기) * 100
     return avg_loss, avg_accuracy
 
 
