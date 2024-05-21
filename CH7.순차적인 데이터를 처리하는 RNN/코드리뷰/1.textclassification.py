@@ -131,20 +131,20 @@ optimizer = torch.optim.Adam(model.parameters(), lr=lr) # 최적화는 Adam을 �
 
 
 best_val_loss = None
-for e in range(1, EPOCHS+1):
-    train(model, optimizer, train_iter)
-    val_loss, val_accuracy = evaluate(model, val_iter)
+for e in range(1, EPOCHS+1): # 지정한 epochs만큼 진행
+    train(model, optimizer, train_iter) # 지정한 모든 배치에서 학습이 완료됨.
+    val_loss, val_accuracy = evaluate(model, val_iter) #평가 진행
 
     print("[이폭: %d] 검증 오차:%5.2f | 검증 정확도:%5.2f" % (e, val_loss, val_accuracy))
 
     # 검증 오차가 가장 적은 최적의 모델을 저장
-    if not best_val_loss or val_loss < best_val_loss:
+    if not best_val_loss or val_loss < best_val_loss: # val_loss 값이 없거나(최초) val_loss가 더 낮게 측정되었으면 해당 가중치 모델이 더 좋은 모델이므로 그 모델을 저장한다.
         if not os.path.isdir("snapshot"):
-            os.makedirs("snapshot")
-        torch.save(model.state_dict(), './snapshot/txtclassification.pt')
-        best_val_loss = val_loss
-
+            os.makedirs("snapshot") # snapshot 폴더가 없으면 폴더 생성
+        torch.save(model.state_dict(), './snapshot/txtclassification.pt') # 모델의 paramter의 상태를 ./snapshot/txtclassification.pt의 이름으로 저장
+        best_val_loss = val_loss # best_val_loss 업데이트
+ 
 
 model.load_state_dict(torch.load('./snapshot/txtclassification.pt'))
-test_loss, test_acc = evaluate(model, test_iter)
+test_loss, test_acc = evaluate(model, test_iter) #test_iter로 모델을 평가
 print('테스트 오차: %5.2f | 테스트 정확도: %5.2f' % (test_loss, test_acc))
